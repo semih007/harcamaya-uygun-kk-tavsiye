@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.HarcamayaUygun" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:colorBackground">#001F26</item>
+    </style>
+</resources>
