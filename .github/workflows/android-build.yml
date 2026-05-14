@@ -1,0 +1,45 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Grant execute permission for Gradle wrapper
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+          fi
+
+      - name: Build release APK
+        run: |
+          if [ -x ./gradlew ]; then
+            ./gradlew clean assembleRelease
+          else
+            echo "Gradle wrapper not found, installing Gradle from apt..."
+            sudo apt-get update
+            sudo apt-get install -y gradle
+            gradle clean assembleRelease
+          fi
+
+      - name: Upload release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
