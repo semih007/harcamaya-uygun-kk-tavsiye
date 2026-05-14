@@ -1,0 +1,1 @@
+# harcamaya-uygun-kk-tavsiye
