@@ -34,7 +34,7 @@ jobs:
               sudo apt-get update
               sudo apt-get install -y gradle
             fi
-            gradle wrapper --gradle-version 8.3
+            gradle wrapper --gradle-version 8.4
           fi
 
       - name: Build release APK
@@ -45,7 +45,7 @@ jobs:
             echo "Gradle wrapper not found, installing Gradle from apt..."
             sudo apt-get update
             sudo apt-get install -y gradle
-            gradle wrapper --gradle-version 8.3
+            gradle wrapper --gradle-version 8.4
             ./gradlew :app:clean :app:assembleRelease --no-daemon
           fi
 
