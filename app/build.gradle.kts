@@ -3,6 +3,11 @@ plugins {
     kotlin("android")
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 android {
     namespace = "com.example.harcamayauygun"
     compileSdk = 35
