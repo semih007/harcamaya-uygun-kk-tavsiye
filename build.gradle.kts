@@ -3,11 +3,6 @@ plugins {
     id("com.android.application") version "8.3.0" apply false
 }
 
-repositories {
-    google()
-    mavenCentral()
-}
-
 tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    delete(layout.buildDirectory)
 }
