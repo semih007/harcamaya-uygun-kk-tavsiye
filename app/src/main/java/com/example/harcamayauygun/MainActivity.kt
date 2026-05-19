@@ -55,7 +55,7 @@ fun OfflineLandingScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .windowInsetsPadding(WindowInsets.systemBars)
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
