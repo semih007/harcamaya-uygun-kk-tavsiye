@@ -1,4 +1,4 @@
-package com.semih007.tavsiyekart
+package com.example.harcamayauygun
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.semih007.tavsiyekart.ui.theme.HarcamayaUygunTheme
+import com.example.harcamayauygun.ui.theme.HarcamayaUygunTheme
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -74,6 +74,7 @@ object CardCalculator {
 
         return CardSummary(
             card = card,
+            daysUntilDue = 0, // TODO: Son ödeme tarihi mantığı eklenecek
             daysUntilStatement = maxOf(0, daysUntilStatement),
             nextStatementDate = nextStatementDate
         )
