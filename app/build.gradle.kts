@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.harcamayauygun"
+    namespace = "com.semih007.tavsiyekart"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.harcamayauygun"
-        minSdk = 24
+        applicationId = "com.semih007.tavsiyekart"
+        minSdk = 29
         targetSdk = 35
         versionCode = 5
         versionName = "0.0.5"

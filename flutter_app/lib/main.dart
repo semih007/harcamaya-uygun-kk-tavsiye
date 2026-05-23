@@ -254,8 +254,8 @@ class _AddCardDialogState extends State<AddCardDialog> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   final day = int.tryParse(value ?? '');
-                  if (day == null || day < 1 || day > 28) {
-                    return '1-28 arası bir gün girin';
+                  if (day == null || day < 1 || day > 31) {
+                    return '1-31 arası bir gün girin';
                   }
                   return null;
                 },
@@ -397,8 +397,10 @@ class CardCalculator {
   }
 
   static DateTime _statementDateForMonth(int year, int month, int day, bool weekendShift) {
-    final normalized = DateTime(year, month, day.clamp(1, 28));
-    if (!weekendShift) return DateTime(normalized.year, normalized.month, normalized.day);
+    final lastDayOfMonth = DateTime(year, month + 1, 0).day;
+    final actualDay = day > lastDayOfMonth ? lastDayOfMonth : day;
+    final normalized = DateTime(year, month, actualDay);
+    if (!weekendShift) return normalized;
     return _shiftToBusinessDay(normalized);
   }
 
