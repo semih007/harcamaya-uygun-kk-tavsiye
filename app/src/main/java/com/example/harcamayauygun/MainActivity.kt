@@ -42,13 +42,14 @@ import java.time.temporal.ChronoUnit
 import java.util.Locale
 import java.util.UUID
 
-data class CreditCard(val id: String = UUID.randomUUID().toString(), val name: String, val cutOffDay: Int, val weekendShift: Boolean)
+data class CreditCard(val id: String = UUID.randomUUID().toString(), val name: String, val cutOffDay: Int, val dueDays: Int = 10, val weekendShift: Boolean)
 
 data class CardSummary(
     val card: CreditCard,
     val daysUntilDue: Int,
     val daysUntilStatement: Int,
-    val nextStatementDate: LocalDate
+    val nextStatementDate: LocalDate,
+    val dueDate: LocalDate
 )
 
 object CardCalculator {
@@ -71,12 +72,15 @@ object CardCalculator {
         }
 
         val daysUntilStatement = ChronoUnit.DAYS.between(today, nextStatementDate).toInt()
+        val dueDate = nextStatementDate.plusDays(card.dueDays.toLong())
+        val daysUntilDue = ChronoUnit.DAYS.between(today, dueDate).toInt()
 
         return CardSummary(
             card = card,
-            daysUntilDue = 0, // TODO: Son ödeme tarihi mantığı eklenecek
+            daysUntilDue = maxOf(0, daysUntilDue),
             daysUntilStatement = maxOf(0, daysUntilStatement),
-            nextStatementDate = nextStatementDate
+            nextStatementDate = nextStatementDate,
+            dueDate = dueDate
         )
     }
 
@@ -109,6 +113,7 @@ object CardStorage {
                 put("id", card.id)
                 put("name", card.name)
                 put("cutOffDay", card.cutOffDay)
+                put("dueDays", card.dueDays)
                 put("weekendShift", card.weekendShift)
             }
             array.put(obj)
@@ -125,7 +130,7 @@ object CardStorage {
             for (i in 0 until array.length()) {
                 val obj = array.getJSONObject(i)
                 val id = obj.optString("id", UUID.randomUUID().toString())
-                cards.add(CreditCard(id, obj.getString("name"), obj.getInt("cutOffDay"), obj.getBoolean("weekendShift")))
+                    cards.add(CreditCard(id, obj.getString("name"), obj.getInt("cutOffDay"), obj.optInt("dueDays", 10), obj.getBoolean("weekendShift")))
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -171,7 +176,7 @@ fun MainScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit) {
     LaunchedEffect(Unit) {
         val savedCards = CardStorage.loadCards(context)
         if (savedCards.isEmpty()) {
-            cards = listOf(CreditCard(name = "Örnek Kart A", cutOffDay = 10, weekendShift = true), CreditCard(name = "Örnek Kart B", cutOffDay = 20, weekendShift = true))
+            cards = listOf(CreditCard(name = "Örnek Kart A", cutOffDay = 10, dueDays = 10, weekendShift = true), CreditCard(name = "Örnek Kart B", cutOffDay = 20, dueDays = 15, weekendShift = true))
             CardStorage.saveCards(context, cards)
         } else {
             cards = savedCards
@@ -364,11 +369,11 @@ fun ManageCardsScreen(
         CardFormDialog(
             cardToEdit = editingCard,
             onDismiss = { showDialog = false; editingCard = null },
-            onSave = { name, cutOff, weekendShift ->
+            onSave = { name, cutOff, dueDays, weekendShift ->
                 val newCards = if (editingCard != null) {
-                    cards.map { if (it.id == editingCard!!.id) it.copy(name = name, cutOffDay = cutOff, weekendShift = weekendShift) else it }
+                    cards.map { if (it.id == editingCard!!.id) it.copy(name = name, cutOffDay = cutOff, dueDays = dueDays, weekendShift = weekendShift) else it }
                 } else {
-                    cards + CreditCard(name = name, cutOffDay = cutOff, weekendShift = weekendShift)
+                    cards + CreditCard(name = name, cutOffDay = cutOff, dueDays = dueDays, weekendShift = weekendShift)
                 }
                 onCardsUpdated(newCards)
                 showDialog = false
@@ -413,6 +418,8 @@ fun HeroCardItem(summary: CardSummary) {
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = "Sonraki Ekstre: ${summary.nextStatementDate.format(formatter)}", fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Son Ödeme Tarihi: ${summary.dueDate.format(formatter)}", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Bu kartla bugün harcama yaparsanız ekstreye yansımasını ${summary.daysUntilStatement} gün ötelemiş olursunuz.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Ekstre kesim günü: Her ayın ${summary.card.cutOffDay}. günü", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
@@ -451,10 +458,11 @@ fun CardItem(summary: CardSummary, onClick: () -> Unit = {}) {
 fun CardFormDialog(
     cardToEdit: CreditCard?,
     onDismiss: () -> Unit,
-    onSave: (String, Int, Boolean) -> Unit
+    onSave: (String, Int, Int, Boolean) -> Unit
 ) {
     var name by remember { mutableStateOf(cardToEdit?.name ?: "") }
     var cutOffDay by remember { mutableStateOf(cardToEdit?.cutOffDay?.toString() ?: "") }
+    var dueDays by remember { mutableStateOf(cardToEdit?.dueDays?.toString() ?: "") }
     var weekendShift by remember { mutableStateOf(cardToEdit?.weekendShift ?: true) }
 
     val title = if (cardToEdit != null) "Kartı Düzenle" else "Yeni Kart Ekle"
@@ -478,6 +486,13 @@ fun CardFormDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true
                 )
+                OutlinedTextField(
+                    value = dueDays,
+                    onValueChange = { dueDays = it },
+                    label = { Text("Son Ödeme Süresi (Gün)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = weekendShift, onCheckedChange = { weekendShift = it })
                     Spacer(modifier = Modifier.width(8.dp))
@@ -489,9 +504,10 @@ fun CardFormDialog(
             Button(
                 onClick = {
                     val cutOff = cutOffDay.toIntOrNull() ?: 1
-                    onSave(name, cutOff, weekendShift)
+                    val due = dueDays.toIntOrNull() ?: 10
+                    onSave(name, cutOff, due, weekendShift)
                 },
-                enabled = name.isNotBlank() && cutOffDay.isNotBlank()
+                enabled = name.isNotBlank() && cutOffDay.isNotBlank() && dueDays.isNotBlank()
             ) {
                 Text(buttonText)
             }
