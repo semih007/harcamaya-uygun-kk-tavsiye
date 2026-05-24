@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Arka plan rengi (Koyu Teal) -->
+    <path
+        android:fillColor="#00695C"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- Kredi Kartı Şekli (Beyaz) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M78,34H30c-4.41,0 -7.96,3.59 -7.96,8L22,66c0,4.41 3.59,8 8,8h48c4.41,0 8,-3.59 8,-8V42C86,37.59 82.41,34 78,34zM78,66H30V50h48V66zM78,42H30v-4h48V42z" />
+</vector>
