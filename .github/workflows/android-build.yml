@@ -23,6 +23,9 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Grant execute permission for Gradle wrapper
         run: |
@@ -36,11 +39,21 @@ jobs:
             gradle wrapper --gradle-version 8.7
           fi
 
-      - name: Build release APK
-        run: ./gradlew :app:clean :app:assembleDebug --no-daemon
+      - name: Build unsigned release APK
+        run: ./gradlew :app:clean :app:assembleRelease --no-daemon
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_B64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload release APK artifact
         uses: actions/upload-artifact@v4.4.0
         with:
           name: app-release-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: ${{steps.sign_app.outputs.signedReleaseFile}}
