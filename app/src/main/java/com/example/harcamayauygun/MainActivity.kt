@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -215,12 +216,16 @@ fun DashboardScreen(
     val today = remember { LocalDate.now() }
     val summaries = cards.map { CardCalculator.calculateCardStatus(today, it) }
     val bestCardSummary = CardCalculator.selectBestCard(summaries)
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Tavsiye Kart", fontWeight = FontWeight.Bold) },
                 actions = {
+                    IconButton(onClick = { showAboutDialog = true }) {
+                        Icon(Icons.Filled.Info, contentDescription = "Hakkında")
+                    }
                     TextButton(onClick = onThemeToggle) {
                         Text(if (isDarkTheme) "☀️" else "🌙", fontSize = 20.sp)
                     }
@@ -254,7 +259,6 @@ fun DashboardScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                OfflineNoticeCard()
 
                 if (bestCardSummary != null) {
                     Text("Bugün Harcama Yapılması Gereken Kart", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
@@ -287,6 +291,10 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+
+    if (showAboutDialog) {
+        AboutDialog(onDismiss = { showAboutDialog = false })
     }
 }
 
@@ -384,25 +392,42 @@ fun ManageCardsScreen(
 }
 
 @Composable
-fun OfflineNoticeCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Gizlilik Odaklı",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Verileriniz yalnızca bu cihazda saklanır. Ağ bağlantısı veya sunucu iletişimi kullanılmaz.",
-                style = MaterialTheme.typography.bodyMedium
-            )
+fun AboutDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Hakkında") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column {
+                    Text(
+                        text = "Gizlilik Odaklı",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Verileriniz yalnızca bu cihazda saklanır. Ağ bağlantısı veya sunucu iletişimi kullanılmaz.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                HorizontalDivider()
+                Text(
+                    text = "Bu uygulama, kredi kartı ekstre tarihlerinizi hesaplayarak harcamalarınız için en uzun faizsiz öteleme süresini sağlayacak olan en avantajlı kartı size önerir.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                HorizontalDivider()
+                Text(
+                    text = "Github: Semih007",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Kapat")
+            }
         }
-    }
+    )
 }
 
 @Composable
@@ -419,10 +444,6 @@ fun HeroCardItem(summary: CardSummary) {
             Text(text = "Sonraki Ekstre: ${summary.nextStatementDate.format(formatter)}", fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Son Ödeme Tarihi: ${summary.dueDate.format(formatter)}", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Bu kartla bugün harcama yaparsanız ekstreye yansımasını ${summary.daysUntilStatement} gün ötelemiş olursunuz.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Ekstre kesim günü: Her ayın ${summary.card.cutOffDay}. günü", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
         }
     }
 }
