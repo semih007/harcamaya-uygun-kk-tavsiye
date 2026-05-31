@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.semih007.tavsiyekart"
     compileSdk = 35
+    buildToolsVersion = "35.0.0"
 
     defaultConfig {
         applicationId = "com.semih007.tavsiyekart"
