@@ -46,7 +46,6 @@ jobs:
         uses: r0adkll/sign-android-release@v1
         id: sign_app
         with:
-          buildToolsVersion: 35.0.0
           releaseDirectory: app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.KEYSTORE_B64 }}
           alias: ${{ secrets.KEY_ALIAS }}
